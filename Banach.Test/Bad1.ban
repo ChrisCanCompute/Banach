@@ -1,0 +1,10 @@
+type Bool : Type =
+| True : Bool
+| False : Bool
+
+type Nat : Type =
+| Z : Nat
+| S : Nat -> Nat
+
+let foo : Nat =
+    Bool.True
