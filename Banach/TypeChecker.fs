@@ -25,7 +25,10 @@ module TypeChecker =
             }
         | Untyped.Type.TNamedParameter (i, t1, t2) ->
             result {
-                let! t1, t2 = TCRes.zip (check t1) (check t2)
+                let! t1 = check t1
+                let t1 = t1 |> Normaliser.normalise context.DefinitionLookup
+                let context = { context with TypingContext = context.TypingContext |> TypingContext.add (QIIdentifier i) t1 }
+                let! t2 = typeCheckType context t2
                 return Expr.make (EBPi (i, t1, t2)) EBType
             }
 
@@ -150,8 +153,19 @@ module TypeChecker =
         // Note this could be done much more efficiently if we interleave it with the type checking
         // N.B. we can probably write this better with active patterns
         let rec validateConstructorType (constructorType : Expr) : unit TypeCheckResult =
+
+            let rec validateLast (t : Expr) =
+                match t.Body with
+                | EBApplication (f, x) -> validateLast f
+                | EBIdentifier i when i = QIIdentifier typeDef.Name -> Ok ()
+                | _ -> TCRes.error TypeDefConstructorTypeWrong
+
             match constructorType.Body with
-            | EBApplication _ -> failwith "Complicated case"
+            | EBApplication _ ->
+                if constructorType.Type <> EBType then
+                    TCRes.error TypeDefConstructorTypeWrong
+                else
+                    validateLast constructorType
             | EBIdentifier i when i = QIIdentifier typeDef.Name -> Ok ()
             | EBPi (_, _, toType) -> validateConstructorType toType
             | EBArrow (_, toType) -> validateConstructorType toType

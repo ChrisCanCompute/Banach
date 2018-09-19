@@ -29,6 +29,10 @@ module TestTypeChecker =
         tryTypeCheck "Silly.ban"
 
     [<Test>]
+    let ``TypeChecker can type the definition of List`` () =
+        tryTypeCheck "List.ban"
+
+    [<Test>]
     [<Explicit>]
     let ``TypeChecker rejects a bad example`` () =
 
