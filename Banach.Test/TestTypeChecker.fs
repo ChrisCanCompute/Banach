@@ -9,6 +9,12 @@ module TestTypeChecker =
 
     let getParsed = TestUtils.getSource >> ReferenceParser.buildParser Untyped.Parser.make >> Result.getOk
 
+    let tryTypeCheck (fileName : string) : unit =
+        let definitions = getParsed fileName
+        let typed = DefinitionsChecker.typeCheckDefinitions definitions
+        typed |> List.choose (function Ok _ -> None | Error info -> Some info) |> List.iter (printfn "%A")
+        typed |> List.forall Result.isOk |> Assert.IsTrue
+
     let expectFail f expectedMessage =
         let ex = Assert.Throws(fun () -> f ())
         Assert.AreEqual(expectedMessage, ex.Message)
@@ -16,19 +22,11 @@ module TestTypeChecker =
     [<Test>]
     [<Explicit>]
     let ``TypeChecker can type check first examples`` () =
-
-        let definitions = getParsed "Test.ban"
-        let typed = DefinitionsChecker.typeCheckDefinitions definitions
-        typed |> List.choose (function Ok _ -> None | Error info -> Some info) |> List.iter (printfn "%A")
-        typed |> List.forall Result.isOk |> Assert.IsTrue
+        tryTypeCheck "Test.ban"
 
     [<Test>]
     let ``TypeChecker can type check silly example`` () =
-
-        let definitions = getParsed "Silly.ban"
-        let typed = DefinitionsChecker.typeCheckDefinitions definitions
-        typed |> List.choose (function Ok _ -> None | Error info -> Some info) |> List.iter (printfn "%A")
-        typed |> List.forall Result.isOk |> Assert.IsTrue
+        tryTypeCheck "Silly.ban"
 
     [<Test>]
     [<Explicit>]

@@ -18,16 +18,7 @@
     <Compile Include="TestUtils.fs" />
     <Compile Include="TestParser.fs" />
     <Compile Include="TestTypeChecker.fs" />
-    <Content Include="Test.ban">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Silly.ban">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bad1.ban">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Bad2.ban">
+    <Content Include="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Program.fs" />
