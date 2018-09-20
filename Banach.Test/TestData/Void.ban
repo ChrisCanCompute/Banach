@@ -1,0 +1,4 @@
+﻿type Void : Type =
+
+let void (v : Void) (a : Type) : a =
+    match v with

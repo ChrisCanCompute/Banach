@@ -193,6 +193,7 @@ module TypeChecker =
             | (i, t)::ps ->
                 result {
                     let! paramType = typeCheckType context t
+                    let paramType = paramType |> Normaliser.normalise context.DefinitionLookup
                     let context = { context with TypingContext = context.TypingContext |> TypingContext.add (QIIdentifier i) paramType }
                     let! e = inner context ps
                     let newBody = EBAbstraction (i, paramType, e)
