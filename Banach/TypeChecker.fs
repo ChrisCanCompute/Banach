@@ -142,34 +142,19 @@ module TypeChecker =
     let typeCheckTypeDefinition (context : TypeCheckerContext) (typeDef : Untyped.TypeDefinition) : TypeDefinition TypeCheckResult =
 
         // Note this could be done much more efficiently if we interleave it with the type checking
-        // N.B. we can probably write this better with active patterns
-        let rec validateKind (kind : Expr) : unit TypeCheckResult =
-            match kind.Body with
-            | EBType -> Ok ()
-            | EBPi (_, _, toType) -> validateKind toType
-            | EBArrow (_, toType) -> validateKind toType
+        let validateKind (kind : Expr) : unit TypeCheckResult =
+            match kind with
+            | Arrows (_, last) when last = Expr.Type -> Ok ()
             | _ -> TCRes.error TypeDefKindWrong
 
         // Note this could be done much more efficiently if we interleave it with the type checking
-        // N.B. we can probably write this better with active patterns
         let rec validateConstructorType (constructorType : Expr) : unit TypeCheckResult =
 
-            let rec validateLast (t : Expr) =
-                match t.Body with
-                | EBApplication (f, x) -> validateLast f
+            match constructorType with
+            | Arrows (_, Apps (e, _)) ->
+                match e.Body with
                 | EBIdentifier i when i = QIIdentifier typeDef.Name -> Ok ()
                 | _ -> TCRes.error TypeDefConstructorTypeWrong
-
-            match constructorType.Body with
-            | EBApplication _ ->
-                if constructorType.Type <> EBType then
-                    TCRes.error TypeDefConstructorTypeWrong
-                else
-                    validateLast constructorType
-            | EBIdentifier i when i = QIIdentifier typeDef.Name -> Ok ()
-            | EBPi (_, _, toType) -> validateConstructorType toType
-            | EBArrow (_, toType) -> validateConstructorType toType
-            | _ -> TCRes.error TypeDefConstructorTypeWrong
 
         let typeCheckConstructor (context : TypeCheckerContext) (c : Untyped.ConstructorDefinition) : (Identifier * Expr) TypeCheckResult =
             result {

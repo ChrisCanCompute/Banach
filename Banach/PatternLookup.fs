@@ -13,19 +13,12 @@ module PatternLookup =
     /// Returns the list of possible constructors that could match the given type
     let tryFind (t : Expr) (PatternLookup map) : (QualifiedIdentifier * Expr) list option =
 
-        // Can we make this easier with active patterns?
         let rec getTypeName (t : Expr) : Identifier =
-            match t.Body with
-            | EBIdentifier i ->
-                match i with
-                | QIIdentifier i -> i
-                | QIQualified _ -> failwith "Shouldn't be a qualified identifier"
-            | EBApplication (f, x) -> getTypeName f
-            | EBAbstraction (var, varType, body) -> failwith "Shouldn't be an abstraction"
-            | EBMatch (e, ps) -> failwith "Shouldn't be a match type"
-            | EBType -> failwith "Shouldn't be Type"
-            | EBPi (fromVar, fromType, toType) -> failwith "Shouldn't be a Pi type"
-            | EBArrow (fromType, toType) -> failwith "Shouldn't be an arrow type"
+            match t with
+            | Apps (e, _) ->
+                match e.Body with
+                | EBIdentifier (QIIdentifier i) -> i
+                | _ -> failwith "Could not get type name"
 
         // N.B. we should filter these to remove irrelevant patterns
         let typeName = getTypeName t
